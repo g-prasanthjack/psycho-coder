@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextLevel | Job Quest 🚀</title>
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        body { background: radial-gradient(circle at top right, #1e1b4b, #000000); min-height: 100vh; color: white; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="p-4 md:p-10 font-sans">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+                    JACK's Career Odyssey ⚡
+                </h1>
+                <p class="text-gray-400">Target: Senior Frontend Developer 🎯</p>
+            </div>
+            <div class="glass px-4 py-2 rounded-full text-sm font-medium animate-pulse text-cyan-400">
+                Live Tracking 📡
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="glass p-6 rounded-2xl">
+                <div class="text-3xl mb-2">📝</div>
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Applied</div>
+                <div class="text-2xl font-bold">12</div>
+            </div>
+            <div class="glass p-6 rounded-2xl border-cyan-500/30">
+                <div class="text-3xl mb-2">🔥</div>
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Interviews</div>
+                <div class="text-2xl font-bold">3</div>
+            </div>
+            <div class="glass p-6 rounded-2xl">
+                <div class="text-3xl mb-2">💎</div>
+                <div class="text-gray-400 text-sm uppercase tracking-wider">Offers</div>
+                <div class="text-2xl font-bold">0</div>
+            </div>
+        </div>
+
+        <!-- Main Tracking Table -->
+        <div class="glass rounded-3xl overflow-hidden">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Active Applications 📂</h2>
+                <button class="bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2 rounded-xl text-sm font-bold transition">
+                    + Add New
+                </button>
+            </div>
+            <table class="w-full text-left">
+                <thead class="text-gray-400 text-xs uppercase bg-white/5">
+                    <tr>
+                        <th class="px-6 py-4">Company</th>
+                        <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-sm">
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="px-6 py-4 font-medium italic">Google 🌈</td>
+                        <td class="px-6 py-4">React Engineer</td>
+                        <td class="px-6 py-4"><span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full border border-yellow-500/50">Interviewing ⏳</span></td>
+                    </tr>
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="px-6 py-4 font-medium italic">Vercel ▲</td>
+                        <td class="px-6 py-4">Product Dev</td>
+                        <td class="px-6 py-4"><span class="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/50">Applied 📩</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
