@@ -60,54 +60,48 @@
     </div>
 
     <!-- Corrected Library Links -->
-        <!-- 1. FIXED LIBRARY LINK (Using Cloudflare which usually bypasses office blocks) -->
-    <script src="https://cloudflare.com"></script>
+    <script src="https://unpkg.com"></script>
 
     <script>
-        // 2. YOUR CONNECTION DATA
-        const SUPABASE_URL = 'https://supabase.co';
+        const SUPABASE_URL = 'https://rhutockhmksbnododbmm.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4';
         
-        // 3. START THE CLIENT
         const { createClient } = supabase;
         const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 4. FUNCTION TO LOAD DATA
+        // 1. LOAD JOBS
         async function loadJobs() {
-            console.log("Fetching data...");
-            try {
-                const { data: jobs, error } = await client.from('jobs').select('*');
-                
-                if (error) throw error;
-
-                const tableBody = document.getElementById('job-table-body');
-                tableBody.innerHTML = ''; 
-
-                if (!jobs || jobs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No data found in Supabase. Check your table!</td></tr>';
-                    return;
-                }
-
-                jobs.forEach(job => {
-                    tableBody.innerHTML += `
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-6 py-4 font-medium italic text-cyan-300">${job.company || 'Unknown'}</td>
-                            <td class="px-6 py-4 text-gray-300">${job.role || 'N/A'}</td>
-                            <td class="px-6 py-4">
-                                <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30 text-xs">
-                                    ${job.status || 'Applied'}
-                                </span>
-                            </td>
-                        </tr>`;
-                });
-                console.log("Data loaded successfully!");
-            } catch (err) {
-                console.error("Fetch error:", err.message);
-                document.getElementById('job-table-body').innerHTML = `<tr><td colspan="3" class="text-center text-red-400 p-4">Error: ${err.message}</td></tr>`;
+            console.log("Fetching jobs...");
+            const { data: jobs, error } = await client.from('jobs').select('*').order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error("Error:", error);
+                return;
             }
+
+            const tableBody = document.getElementById('job-table-body');
+            tableBody.innerHTML = ''; 
+
+            if (!jobs || jobs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No applications found yet. Add your first one!</td></tr>';
+                return;
+            }
+
+            jobs.forEach(job => {
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="px-6 py-4 font-medium italic text-cyan-300">${job.company || 'Unknown'}</td>
+                        <td class="px-6 py-4 text-gray-300">${job.role || 'N/A'}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30 text-xs">
+                                ${job.status || 'Applied'}
+                            </span>
+                        </td>
+                    </tr>`;
+            });
         }
 
-        // 5. FUNCTION TO SAVE DATA
+        // 2. ADD JOBS
         async function addJob() {
             const companyInput = document.getElementById('new-company');
             const roleInput = document.getElementById('new-role');
@@ -115,8 +109,11 @@
             const company = companyInput.value.trim();
             const role = roleInput.value.trim();
 
-            if (!company || !role) return alert("Please enter both Company and Role!");
+            if (!company || !role) {
+                return alert("Please enter both Company and Role!");
+            }
 
+            console.log("Adding job...");
             const { error } = await client.from('jobs').insert([{ 
                 company: company, 
                 role: role, 
@@ -128,11 +125,10 @@
             } else {
                 companyInput.value = '';
                 roleInput.value = '';
-                loadJobs(); 
+                loadJobs(); // Refresh the table
             }
         }
 
-        // RUN ON START
         loadJobs();
     </script>
 </body>
