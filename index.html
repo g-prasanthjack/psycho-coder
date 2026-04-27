@@ -75,5 +75,20 @@
             </table>
         </div>
     </div>
+<script src="https://jsdelivr.net"></script>
+<script>
+  // Replace these with your actual keys from Supabase
+  const SUPABASE_URL = 'https://rhutockhmksbnododbmm.supabase.co'
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4'
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  async function loadJobs() {
+    const { data: jobs } = await supabase.from('jobs').select('*')
+    console.log("Your real jobs:", jobs)
+    // This is where we will write the code to show them on screen!
+  }
+  loadJobs()
+</script>
+
 </body>
 </html>
