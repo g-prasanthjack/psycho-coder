@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextLevel | Job Quest 🚀</title>
-    <!-- FIXED: Correct Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: radial-gradient(circle at top right, #1e1b4b, #000000); min-height: 100vh; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="p-4 md:p-10 font-sans">
+<body class="p-4 md:p-10 font-sans text-white">
     <div class="max-w-5xl mx-auto">
+        <!-- Header -->
         <header class="flex justify-between items-center mb-12">
             <div>
                 <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
@@ -25,9 +25,21 @@
             </div>
         </header>
 
+        <!-- ADD DATA SECTION -->
+        <div class="glass p-6 rounded-3xl mb-10 border border-cyan-500/20">
+            <h2 class="text-xl font-semibold mb-4 text-cyan-400">Add New Application ✍️</h2>
+            <div class="flex flex-col md:flex-row gap-4">
+                <input id="new-company" type="text" placeholder="Company Name" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 flex-1 focus:border-cyan-500 outline-none transition">
+                <input id="new-role" type="text" placeholder="Role (e.g. React Developer)" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 flex-1 focus:border-cyan-500 outline-none transition">
+                <button onclick="addJob()" class="bg-cyan-500 hover:bg-cyan-400 text-black px-8 py-2 rounded-xl font-bold transition transform active:scale-95">
+                    Save Entry
+                </button>
+            </div>
+        </div>
+
         <!-- Main Tracking Table -->
         <div class="glass rounded-3xl overflow-hidden">
-            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+            <div class="p-6 border-b border-white/10">
                 <h2 class="text-xl font-semibold">Active Applications 📂</h2>
             </div>
             <table class="w-full text-left">
@@ -38,7 +50,6 @@
                         <th class="px-6 py-4">Status</th>
                     </tr>
                 </thead>
-                <!-- FIXED: Added an ID here so we can inject data -->
                 <tbody id="job-table-body" class="divide-y divide-white/5 text-sm">
                     <tr>
                         <td colspan="3" class="px-6 py-8 text-center text-gray-500 animate-pulse">Loading from Supabase...</td>
@@ -48,53 +59,77 @@
         </div>
     </div>
 
-<!-- FIXED: Correct Supabase Library Link -->
+    <!-- Corrected Library Links -->
     <script src="https://unpkg.com"></script>
 
+    <script>
+        const SUPABASE_URL = 'https://rhutockhmksbnododbmm.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4';
+        
+        const { createClient } = supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-  const SUPABASE_URL = 'https://rhutockhmksbnododbmm.supabase.co'
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4'
-  
-  // FIXED: Accessing the library correctly
-  const { createClient } = supabase
-  const client = createClient(SUPABASE_URL, SUPABASE_KEY)
+        // 1. LOAD JOBS
+        async function loadJobs() {
+            console.log("Fetching jobs...");
+            const { data: jobs, error } = await client.from('jobs').select('*').order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error("Error:", error);
+                return;
+            }
 
-  async function loadJobs() {
-    console.log("Fetching jobs...")
-    const { data: jobs, error } = await client.from('jobs').select('*')
-    
-    if (error) {
-        console.error("Error:", error)
-        return
-    }
+            const tableBody = document.getElementById('job-table-body');
+            tableBody.innerHTML = ''; 
 
-    const tableBody = document.getElementById('job-table-body')
-    tableBody.innerHTML = '' // Clear the loading message
+            if (!jobs || jobs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No applications found yet. Add your first one!</td></tr>';
+                return;
+            }
 
-    if (jobs.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No jobs found. Add one in Supabase!</td></tr>'
-        return
-    }
+            jobs.forEach(job => {
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="px-6 py-4 font-medium italic text-cyan-300">${job.company || 'Unknown'}</td>
+                        <td class="px-6 py-4 text-gray-300">${job.role || 'N/A'}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30 text-xs">
+                                ${job.status || 'Applied'}
+                            </span>
+                        </td>
+                    </tr>`;
+            });
+        }
 
-    jobs.forEach(job => {
-      const row = `
-        <tr class="hover:bg-white/5 transition">
-            <td class="px-6 py-4 font-medium italic">${job.company || 'Unknown'}</td>
-            <td class="px-6 py-4">${job.role || 'N/A'}</td>
-            <td class="px-6 py-4">
-                <span class="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/50">
-                    ${job.status || 'Pending'}
-                </span>
-            </td>
-        </tr>`
-      tableBody.innerHTML += row
-    })
-    console.log("Table updated with real data!")
-  }
+        // 2. ADD JOBS
+        async function addJob() {
+            const companyInput = document.getElementById('new-company');
+            const roleInput = document.getElementById('new-role');
+            
+            const company = companyInput.value.trim();
+            const role = roleInput.value.trim();
 
-  loadJobs()
-</script>
+            if (!company || !role) {
+                return alert("Please enter both Company and Role!");
+            }
 
+            console.log("Adding job...");
+            const { error } = await client.from('jobs').insert([{ 
+                company: company, 
+                role: role, 
+                status: 'Applied 📩' 
+            }]);
+
+            if (error) {
+                alert("Failed to save: " + error.message);
+            } else {
+                companyInput.value = '';
+                roleInput.value = '';
+                loadJobs(); // Refresh the table
+            }
+        }
+
+        loadJobs();
+    </script>
 </body>
 </html>
