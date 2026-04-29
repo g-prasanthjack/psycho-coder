@@ -1,89 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Career Odyssey ⚡</title>
-    <script src="https://tailwindcss.com"></script>
-    <script src="https://jsdelivr.net"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextLevel | Job Quest 🚀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Corrected Supabase Library Link -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: radial-gradient(circle at top right, #1e1b4b, #000000); min-height: 100vh; color: white; font-family: sans-serif; }
+        body { background: radial-gradient(circle at top right, #1e1b4b, #000000); min-height: 100vh; color: white; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 md:p-10 font-sans text-white">
     <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">Career Odyssey ⚡</h1>
-            <div id="status-badge" class="glass px-4 py-2 rounded-full text-xs text-yellow-400">Connecting...</div>
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+                     Career Odyssey ⚡
+                </h1>
+                <p class="text-gray-400">Target: Senior Frontend Developer 🎯</p>
+            </div>
+            <div id="status-badge" class="glass px-4 py-2 rounded-full text-sm font-medium text-yellow-400">
+                Connecting... 📡
+            </div>
         </header>
 
-        <!-- INPUT FORM -->
         <div class="glass p-6 rounded-3xl mb-10 border border-cyan-500/20">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input id="new-company" type="text" placeholder="Company" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-cyan-500">
-                <input id="new-role" type="text" placeholder="Role" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-cyan-500">
-            </div>
-            <div class="flex flex-col md:flex-row gap-4 items-center">
-                <label class="flex-1 w-full border border-dashed border-white/20 p-2 rounded-xl text-center cursor-pointer hover:bg-white/5">
-                    <span id="file-name" class="text-gray-400 text-sm">📎 Attach File (PDF/Image)</span>
-                    <input type="file" id="media-upload" class="hidden" onchange="document.getElementById('file-name').innerText = '✅ ' + this.files[0].name">
-                </label>
-                <button onclick="addJob()" id="save-btn" class="bg-cyan-500 hover:bg-cyan-400 text-black px-10 py-2 rounded-xl font-bold transition w-full md:w-auto">Save Entry</button>
+            <h2 class="text-xl font-semibold mb-4 text-cyan-400">Add New Application ✍️</h2>
+            <div class="flex flex-col md:flex-row gap-4">
+                <input id="new-company" type="text" placeholder="Company Name" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 flex-1 focus:border-cyan-500 outline-none transition text-white">
+                <input id="new-role" type="text" placeholder="Role (e.g. React Developer)" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 flex-1 focus:border-cyan-500 outline-none transition text-white">
+                <button onclick="addJob()" class="bg-cyan-500 hover:bg-cyan-400 text-black px-8 py-2 rounded-xl font-bold transition transform active:scale-95">
+                    Save Entry
+                </button>
             </div>
         </div>
 
-        <!-- DATA TABLE -->
         <div class="glass rounded-3xl overflow-hidden">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-xl font-semibold">Active Applications 📂</h2>
+            </div>
             <table class="w-full text-left">
-                <thead class="bg-white/5 text-gray-400 text-xs uppercase">
-                    <tr><th class="px-6 py-4">Company</th><th class="px-6 py-4">Role</th><th class="px-6 py-4">File</th><th class="px-6 py-4">Status</th></tr>
+                <thead class="text-gray-400 text-xs uppercase bg-white/5">
+                    <tr>
+                        <th class="px-6 py-4">Company</th>
+                        <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4">Status</th>
+                    </tr>
                 </thead>
-                <tbody id="job-table-body" class="divide-y divide-white/5 text-sm"></tbody>
+                <tbody id="job-table-body" class="divide-y divide-white/5 text-sm">
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-gray-500 animate-pulse">Loading jobs...</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const SB_URL = 'https://supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4';
-        const _supabase = supabase.createClient(SB_URL, SB_KEY);
+        // 1. Configuration
+        const SUPABASE_URL = 'https://rhutockhmksbnododbmm.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4';
+        
+        // 2. Initialize Client
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function setStatus(msg, cls) { 
-            const b = document.getElementById('status-badge');
-            b.innerText = msg; b.className = `glass px-4 py-2 rounded-full text-xs ${cls}`;
+        // Update UI Status
+        function setStatus(msg, colorClass) {
+            const badge = document.getElementById('status-badge');
+            badge.innerText = msg;
+            badge.className = `glass px-4 py-2 rounded-full text-sm font-medium ${colorClass}`;
         }
 
+        // 3. LOAD JOBS
         async function loadJobs() {
-            const { data, error } = await _supabase.from('jobs').select('*').order('created_at', { ascending: false });
-            if (error) return setStatus('Error ❌', 'text-red-400');
-            const tbody = document.getElementById('job-table-body');
-            tbody.innerHTML = data.length ? '' : '<tr><td colspan="4" class="p-10 text-center text-gray-500">No entries.</td></tr>';
-            data.forEach(j => {
-                const link = j.attachment_url ? `<a href="${j.attachment_url}" target="_blank" class="text-cyan-400 underline">View</a>` : '—';
-                tbody.innerHTML += `<tr class="hover:bg-white/5"><td class="px-6 py-4 text-cyan-300 italic">${j.company}</td><td class="px-6 py-4">${j.role}</td><td class="px-6 py-4">${link}</td><td class="px-6 py-4"><span class="text-xs bg-cyan-500/10 p-1 px-2 rounded-full border border-cyan-500/20">${j.status || 'Applied'}</span></td></tr>`;
-            });
-            setStatus('Connected 📡', 'text-cyan-400');
+            try {
+                const { data: jobs, error } = await _supabase
+                    .from('jobs')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+
+                const tableBody = document.getElementById('job-table-body');
+                tableBody.innerHTML = ''; 
+
+                if (!jobs || jobs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No applications found yet.</td></tr>';
+                } else {
+                    jobs.forEach(job => {
+                        tableBody.innerHTML += `
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="px-6 py-4 font-medium italic text-cyan-300">${job.company}</td>
+                                <td class="px-6 py-4 text-gray-300">${job.role}</td>
+                                <td class="px-6 py-4">
+                                    <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30 text-xs">
+                                        ${job.status || 'Applied'}
+                                    </span>
+                                </td>
+                            </tr>`;
+                    });
+                }
+                setStatus('Live Tracking 📡', 'text-cyan-400');
+            } catch (err) {
+                console.error("Fetch error:", err);
+                setStatus('Connection Error ❌', 'text-red-400');
+            }
         }
 
+        // 4. ADD JOBS
         async function addJob() {
-            const c = document.getElementById('new-company'), r = document.getElementById('new-role'), f = document.getElementById('media-upload'), btn = document.getElementById('save-btn');
-            if(!c.value || !r.value) return alert("Fill fields!");
-            btn.disabled = true; setStatus('Saving... ⏳', 'text-yellow-400');
-            try {
-                let url = null;
-                if(f.files[0]) {
-                    const path = `${Date.now()}_${f.files[0].name}`;
-                    const { error: upErr } = await _supabase.storage.from('job-media').upload(path, f.files[0]);
-                    if(upErr) throw upErr;
-                    url = _supabase.storage.from('job-media').getPublicUrl(path).data.publicUrl;
-                }
-                const { error: inErr } = await _supabase.from('jobs').insert([{ company: c.value, role: r.value, attachment_url: url, status: 'Applied 📩' }]);
-                if(inErr) throw inErr;
-                c.value = ''; r.value = ''; f.value = ''; document.getElementById('file-name').innerText = "📎 Attach File (PDF/Image)";
+            const companyInput = document.getElementById('new-company');
+            const roleInput = document.getElementById('new-role');
+            
+            const company = companyInput.value.trim();
+            const role = roleInput.value.trim();
+
+            if (!company || !role) return alert("Fill in all fields!");
+
+            setStatus('Saving... ⏳', 'text-yellow-400');
+
+            const { error } = await _supabase.from('jobs').insert([
+                { company, role, status: 'Applied 📩' }
+            ]);
+
+            if (error) {
+                alert("Error saving data: " + error.message);
+                setStatus('Error ❌', 'text-red-400');
+            } else {
+                companyInput.value = '';
+                roleInput.value = '';
                 await loadJobs();
-            } catch (e) { alert(e.message); setStatus('Error ❌', 'text-red-400'); }
-            btn.disabled = false;
+            }
         }
+
+        // Start
         loadJobs();
     </script>
 </body>
