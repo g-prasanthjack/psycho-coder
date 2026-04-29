@@ -70,137 +70,130 @@
             </table>
         </div>
     </div>
+   <script>
+    // 1. CONFIGURATION (MUST BE AT THE VERY TOP)
+    const SUPABASE_URL = 'https://supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4';
+    
+    // 2. INITIALIZE CLIENT (This must happen before any functions are called)
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <script>
-        function updateFileLabel(input) {
-            const label = document.getElementById('file-label');
-            if (input.files.length > 0) {
-                label.innerText = "✅ " + input.files[0].name;
-                label.classList.add('text-cyan-400');
-            }
-        }
-        // 1. Configuration
-        const SUPABASE_URL = 'https://supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJodXRvY2tobWtzYm5vZG9kYm1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTYyNDcsImV4cCI6MjA5Mjg5MjI0N30.qKRj4YrwKs0keY2NLOJ3ZGuvRtERdb5shXbBFQka3G4';
-        
-        // 2. Initialize Client
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        function setStatus(msg, colorClass) {
-            const badge = document.getElementById('status-badge');
+    // 3. HELPER FUNCTIONS
+    function setStatus(msg, colorClass) {
+        const badge = document.getElementById('status-badge');
+        if (badge) {
             badge.innerText = msg;
             badge.className = `glass px-4 py-2 rounded-full text-sm font-medium ${colorClass}`;
         }
+    }
 
-        // --- MEDIA UPLOAD LOGIC ---
-        async function uploadMedia(file) {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
+    async function uploadMedia(file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}_${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await _supabase.storage
+            .from('job-media')
+            .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = _supabase.storage
+            .from('job-media')
+            .getPublicUrl(fileName);
+
+        return publicUrl;
+    }
+
+    // 4. MAIN FUNCTIONS
+    async function loadJobs() {
+        try {
+            const { data: jobs, error } = await _supabase
+                .from('jobs')
+                .select('*')
+                .order('created_at', { ascending: false });
             
-            const { data, error } = await _supabase.storage
-                .from('job-media')
-                .upload(fileName, file);
+            if (error) throw error;
+
+            const tableBody = document.getElementById('job-table-body');
+            tableBody.innerHTML = ''; 
+
+            if (!jobs || jobs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No applications found yet.</td></tr>';
+            } else {
+                jobs.forEach(job => {
+                    const attachmentLink = job.attachment_url 
+                        ? `<a href="${job.attachment_url}" target="_blank" class="text-cyan-400 underline hover:text-cyan-300">View File 📄</a>`
+                        : `<span class="text-gray-600">None</span>`;
+
+                    tableBody.innerHTML += `
+                        <tr class="hover:bg-white/5 transition">
+                            <td class="px-6 py-4 font-medium italic text-cyan-300">${job.company}</td>
+                            <td class="px-6 py-4 text-gray-300">${job.role}</td>
+                            <td class="px-6 py-4">${attachmentLink}</td>
+                            <td class="px-6 py-4">
+                                <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30 text-xs">
+                                    ${job.status || 'Applied'}
+                                </span>
+                            </td>
+                        </tr>`;
+                });
+            }
+            setStatus('Live Tracking 📡', 'text-cyan-400');
+        } catch (err) {
+            console.error("Fetch error:", err);
+            setStatus('Connection Error ❌', 'text-red-400');
+        }
+    }
+
+    async function addJob() {
+        const companyInput = document.getElementById('new-company');
+        const roleInput = document.getElementById('new-role');
+        const fileInput = document.getElementById('media-upload');
+        const saveBtn = document.getElementById('save-btn');
+        
+        const company = companyInput.value.trim();
+        const role = roleInput.value.trim();
+
+        if (!company || !role) return alert("Fill in all fields!");
+
+        setStatus('Processing... ⏳', 'text-yellow-400');
+        saveBtn.disabled = true;
+
+        try {
+            let fileUrl = null;
+
+            if (fileInput.files.length > 0) {
+                fileUrl = await uploadMedia(fileInput.files[0]); // Make sure to use files[0]
+            }
+
+            const { error } = await _supabase.from('jobs').insert([
+                { 
+                    company, 
+                    role, 
+                    status: 'Applied 📩',
+                    attachment_url: fileUrl 
+                }
+            ]);
 
             if (error) throw error;
 
-            const { data: { publicUrl } } = _supabase.storage
-                .from('job-media')
-                .getPublicUrl(fileName);
-
-            return publicUrl;
-        }
-
-        // 3. LOAD JOBS
-        async function loadJobs() {
-            try {
-                const { data: jobs, error } = await _supabase
-                    .from('jobs')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-
-                const tableBody = document.getElementById('job-table-body');
-                tableBody.innerHTML = ''; 
-
-                if (!jobs || jobs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No applications found yet.</td></tr>';
-                } else {
-                    jobs.forEach(job => {
-                        const attachmentLink = job.attachment_url 
-                            ? `<a href="${job.attachment_url}" target="_blank" class="text-cyan-400 underline hover:text-cyan-300">View File 📄</a>`
-                            : `<span class="text-gray-600">None</span>`;
-
-                        tableBody.innerHTML += `
-                            <tr class="hover:bg-white/5 transition">
-                                <td class="px-6 py-4 font-medium italic text-cyan-300">${job.company}</td>
-                                <td class="px-6 py-4 text-gray-300">${job.role}</td>
-                                <td class="px-6 py-4">${attachmentLink}</td>
-                                <td class="px-6 py-4">
-                                    <span class="bg-cyan-500/10 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30 text-xs">
-                                        ${job.status || 'Applied'}
-                                    </span>
-                                </td>
-                            </tr>`;
-                    });
-                }
-                setStatus('Live Tracking 📡', 'text-cyan-400');
-            } catch (err) {
-                console.error("Fetch error:", err);
-                setStatus('Connection Error ❌', 'text-red-400');
-            }
-        }
-
-        // 4. ADD JOBS
-        async function addJob() {
-            const companyInput = document.getElementById('new-company');
-            const roleInput = document.getElementById('new-role');
-            const fileInput = document.getElementById('media-upload');
-            const saveBtn = document.getElementById('save-btn');
+            companyInput.value = '';
+            roleInput.value = '';
+            fileInput.value = '';
+            document.getElementById('file-label').innerText = "📎 Attach Screenshot or PDF";
+            document.getElementById('file-label').classList.remove('text-cyan-400');
             
-            const company = companyInput.value.trim();
-            const role = roleInput.value.trim();
-
-            if (!company || !role) return alert("Fill in all fields!");
-
-            setStatus('Processing... ⏳', 'text-yellow-400');
-            saveBtn.disabled = true;
-
-            try {
-                let fileUrl = null;
-
-                if (fileInput.files.length > 0) {
-                    fileUrl = await uploadMedia(fileInput.files[0]);
-                }
-
-                const { error } = await _supabase.from('jobs').insert([
-                    { 
-                        company, 
-                        role, 
-                        status: 'Applied 📩',
-                        attachment_url: fileUrl 
-                    }
-                ]);
-
-                if (error) throw error;
-
-                // Reset Form UI
-                companyInput.value = '';
-                roleInput.value = '';
-                fileInput.value = '';
-                document.getElementById('file-label').innerText = "📎 Attach Screenshot or PDF";
-                document.getElementById('file-label').classList.remove('text-cyan-400');
-                
-                await loadJobs();
-            } catch (err) {
-                alert("Error: " + err.message);
-                setStatus('Error ❌', 'text-red-400');
-            } finally {
-                saveBtn.disabled = false;
-            }
+            await loadJobs();
+        } catch (err) {
+            alert("Error: " + err.message);
+            setStatus('Error ❌', 'text-red-400');
+        } finally {
+            saveBtn.disabled = false;
         }
+    }
 
-        loadJobs();
-    </script>
+    // 5. START APP
+    loadJobs();
+</script>
 </body>
 </html>
